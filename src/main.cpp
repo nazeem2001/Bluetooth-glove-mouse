@@ -5,6 +5,22 @@
 #endif
 #include <BleCombo.h>
 #include<BleComboMouse.h>
+#define ESP_DRD_USE_LITTLEFS    true
+#define ESP_DRD_USE_SPIFFS      false
+#define ESP_DRD_USE_EEPROM      false
+
+#define DOUBLERESETDETECTOR_DEBUG       true  //false
+
+#include <ESP_DoubleResetDetector.h>
+// Number of seconds after reset during which a 
+// subseqent reset will be considered a double reset.
+#define DRD_TIMEOUT 2
+
+// RTC Memory Address for the DoubleResetDetector to use
+#define DRD_ADDRESS 0
+
+DoubleResetDetector* drd;
+
 #define BUTTON1 2
 #define BUTTON2 15
 #define BUTTON3 13
@@ -36,6 +52,16 @@ bool leftpresent,rightpresent,middlepresent;
 
 
 void setup() {
+    Serial.begin(38400);
+    drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+    
+    if (drd->detectDoubleReset()==false) 
+    {
+        delay(2000);
+          drd->loop();
+        esp_deep_sleep_start();
+    }
+  
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin(4,0,uint32_t(400000));
@@ -48,7 +74,7 @@ void setup() {
     // initialize serial communication
     // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
     // it's really up to you depending on your project)
-    Serial.begin(38400);
+    
     
     
     pinMode(BUTTON1,INPUT_PULLUP);
@@ -156,8 +182,9 @@ void loop() {
             // attachInterrupt(digitalPinToInterrupt(BUTTON3),B3_isr,CHANGE);      
             // }
         }
+        
     }
     else 
         delay (2000);Serial.print("wjdj\n");
-    
+    drd->loop();
 }
