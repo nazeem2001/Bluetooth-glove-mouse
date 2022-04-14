@@ -35,6 +35,7 @@ int16_t gx, gy, gz;
 #define OUTPUT_READABLE_ACCELGYRO
 #include <BleCombo.h>
 #define LED_PIN 22
+#define mpu1 17
 
 
 bool blinkState = false;
@@ -54,14 +55,17 @@ bool leftpresent,rightpresent,middlepresent;
 void setup() {
     Serial.begin(38400);
     drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
-    
+    pinMode(mpu1,INPUT);
+    digitalWrite(mpu1,0);
     if (drd->detectDoubleReset()==false) 
     {
         delay(2000);
           drd->loop();
         esp_deep_sleep_start();
     }
-  
+    pinMode(mpu1,OUTPUT);
+    digitalWrite(mpu1,1);
+    delay(1000);
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin(4,0,uint32_t(400000));
