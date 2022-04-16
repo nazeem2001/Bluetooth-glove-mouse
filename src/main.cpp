@@ -1,15 +1,14 @@
 #include "I2Cdev.h"
 #include "MPU6050.h"
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include "Wire.h"
-#endif
+#include "Wire.h"
 #include <BleCombo.h>
 #include<BleComboMouse.h>
+#include "esp_sleep.h"
 #define ESP_DRD_USE_LITTLEFS    true
 #define ESP_DRD_USE_SPIFFS      false
 #define ESP_DRD_USE_EEPROM      false
 
-#define DOUBLERESETDETECTOR_DEBUG       true  //false
+#define DOUBLERESETDETECTOR_DEBUG       false
 
 #include <ESP_DoubleResetDetector.h>
 // Number of seconds after reset during which a 
@@ -39,26 +38,20 @@ int16_t gx, gy, gz;
 
 
 bool blinkState = false;
-bool b1V=false,b2V=false,b3V=false;
-bool b1intruptAct=true,b2intruptAct=true,b3intruptAct=true;
-
-
-
 bool leftprevious=true, rightprevious=true, middleprevious=true;
 bool leftpresent,rightpresent,middlepresent;
 
-
-
-
-
-
 void setup() {
-    Serial.begin(38400);
+    #if (DOUBLERESETDETECTOR_DEBUG)
+        Serial.begin(38400);
+    #endif
     drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
-    pinMode(mpu1,INPUT);
+    pinMode(mpu1,OUTPUT);
     digitalWrite(mpu1,0);
     if (drd->detectDoubleReset()==false) 
     {
+        gpio_hold_en(GPIO_NUM_17);
+        gpio_deep_sleep_hold_en();
         delay(2000);
           drd->loop();
         esp_deep_sleep_start();
@@ -67,14 +60,10 @@ void setup() {
     digitalWrite(mpu1,1);
     delay(1000);
     // join I2C bus (I2Cdev library doesn't do this automatically)
-    #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-        Wire.begin(4,0,uint32_t(400000));
+    Wire.begin(4,0,uint32_t(400000));
     
-    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-        Fastwire::setup(400, true);
-    #endif
-     Keyboard.begin();
-     Mouse.begin();
+    Keyboard.begin();
+    Mouse.begin();
     // initialize serial communication
     // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
     // it's really up to you depending on your project)
@@ -87,19 +76,22 @@ void setup() {
  
 
     // initialize device
-    Serial.println("Initializing I2C devices...");
+    #if (DOUBLERESETDETECTOR_DEBUG)
+        Serial.println("Initializing I2C devices...");
+    #endif
     accelgyro.initialize();
 
     // verify connection
-    Serial.println("Testing device connections...");
-    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-
+    #if (DOUBLERESETDETECTOR_DEBUG)
+        Serial.println("Testing device connections...");
+        Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    
     // use the code below to change accel/gyro offset values
     
-    Serial.println("Updating internal sensor offsets...");
+        Serial.println("Updating internal sensor offsets...");
    
-  Serial.println("Starting work!");
-
+        Serial.println("Starting work!");
+    #endif
     // configure Arduino LED pin for output
     pinMode(LED_PIN, OUTPUT);
 }
@@ -161,15 +153,15 @@ void loop() {
             //oy=wrappedDelta(pay, gy); 
         // if(((-1000>gx)|(gx>1000))&((-1000>gz)|(gz>1000))){
             Mouse.move(-gz/1000,gx/1000);
-            pax=gx;
-            pay=gy;
+            
             //}
             // these methods (and a few others) are also available
             //accelgyro.getAcceleration(&ax, &ay, &az);
             blinkState = !blinkState;
             digitalWrite(LED_PIN, blinkState);
-            
+            #if (DOUBLERESETDETECTOR_DEBUG)
             Serial.print(gz);Serial.print("\t");Serial.println(gy);
+            #endif
             // if (b1intruptAct==false){
             // delay(70);
             // b1intruptAct=true;Serial.print("wjdjlkjj\n");
@@ -189,6 +181,9 @@ void loop() {
         
     }
     else 
-        delay (2000);Serial.print("wjdj\n");
+        delay (2000);
+        #if (DOUBLERESETDETECTOR_DEBUG)
+            Serial.print("wjdj\n");
+        #endif
     drd->loop();
 }
