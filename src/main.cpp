@@ -8,9 +8,11 @@
 #define ESP_DRD_USE_SPIFFS      false
 #define ESP_DRD_USE_EEPROM      false
 
-#define DOUBLERESETDETECTOR_DEBUG       false
+#define DOUBLERESETDETECTOR_DEBUG       true
 
 #include <ESP_DoubleResetDetector.h>
+
+#include<Pangodream_18650_CL.h>
 // Number of seconds after reset during which a 
 // subseqent reset will be considered a double reset.
 #define DRD_TIMEOUT 2
@@ -24,6 +26,7 @@ DoubleResetDetector* drd;
 #define BUTTON2 15
 #define BUTTON3 13
 MPU6050 accelgyro;
+Pangodream_18650_CL BL;
 
 int16_t ax, ay, az;
 int16_t pax=0, pay=0, paz=0;
@@ -64,6 +67,10 @@ void setup() {
     
     Keyboard.begin();
     Mouse.begin();
+    #if (DOUBLERESETDETECTOR_DEBUG)
+        Serial.print("Charge level: "+BL.getBatteryChargeLevel());
+    #endif
+    Keyboard.setBatteryLevel(BL.getBatteryChargeLevel());
     // initialize serial communication
     // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
     // it's really up to you depending on your project)
@@ -106,6 +113,7 @@ void loop() {
             middlepresent = digitalRead(BUTTON3);
             if(leftprevious!=leftpresent)
             {   
+                Keyboard.setBatteryLevel(BL.getBatteryChargeLevel());
                 leftprevious=leftpresent;
                 delay(100);
                 if(leftpresent==false)
@@ -119,6 +127,7 @@ void loop() {
             }
             if(rightprevious!=rightpresent)
             {
+                Keyboard.setBatteryLevel(BL.getBatteryChargeLevel());
                 rightprevious=rightpresent;
                 delay(100);
                 if(rightpresent==false)
@@ -132,6 +141,7 @@ void loop() {
             }
             if(middleprevious!=middlepresent)
             {
+                Keyboard.setBatteryLevel(BL.getBatteryChargeLevel());
                 middleprevious=middlepresent;
                 delay(100);
                 if(middlepresent==false)
