@@ -2,13 +2,12 @@
 #include "MPU6050.h"
 #include "Wire.h"
 #include <BleCombo.h>
-#include<BleComboMouse.h>
 #include "esp_sleep.h"
 #define ESP_DRD_USE_LITTLEFS    true
 #define ESP_DRD_USE_SPIFFS      false
 #define ESP_DRD_USE_EEPROM      false
 
-#define DOUBLERESETDETECTOR_DEBUG       true
+#define DOUBLERESETDETECTOR_DEBUG      true
 
 #include <ESP_DoubleResetDetector.h>
 
@@ -25,23 +24,24 @@ DoubleResetDetector* drd;
 #define BUTTON1 2
 #define BUTTON2 15
 #define BUTTON3 13
+#define SCL 0
+#define SDA 4
 MPU6050 accelgyro;
 Pangodream_18650_CL BL;
 
 int16_t ax, ay, az;
-int16_t pax=0, pay=0, paz=0;
+
 int16_t gx, gy, gz;
 
 
 
-#define OUTPUT_READABLE_ACCELGYRO
-#include <BleCombo.h>
+
 #define LED_PIN 22
 #define mpu1 17
 
 
 bool blinkState = false;
-bool leftprevious=true, rightprevious=true, middleprevious=true;
+bool leftprevious, rightprevious, middleprevious;
 bool leftpresent,rightpresent,middlepresent;
 
 void setup() {
@@ -59,11 +59,10 @@ void setup() {
           drd->loop();
         esp_deep_sleep_start();
     }
-    pinMode(mpu1,OUTPUT);
     digitalWrite(mpu1,1);
     delay(1000);
     // join I2C bus (I2Cdev library doesn't do this automatically)
-    Wire.begin(4,0,uint32_t(400000));
+    Wire.begin(SDA,SCL,uint32_t(400000));
     
     Keyboard.begin();
     Mouse.begin();
@@ -80,7 +79,10 @@ void setup() {
     pinMode(BUTTON1,INPUT_PULLUP);
     pinMode(BUTTON2,INPUT_PULLUP);
     pinMode(BUTTON3,INPUT_PULLUP);
- 
+    leftprevious = digitalRead(BUTTON1);
+    rightprevious = digitalRead(BUTTON2);
+    middleprevious = digitalRead(BUTTON3);
+            
 
     // initialize device
     #if (DOUBLERESETDETECTOR_DEBUG)
@@ -102,7 +104,6 @@ void setup() {
     // configure Arduino LED pin for output
     pinMode(LED_PIN, OUTPUT);
 }
-int ox,oy;
 void loop() {
     if(Keyboard.isConnected()){
         accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
@@ -155,45 +156,22 @@ void loop() {
             }
 
 
-            // read raw accel/gyro measurements from device
             
-            //gy=gy/200;
-            //gx=gx/200;
-            //ox=wrappedDelta(pax, gx);
-            //oy=wrappedDelta(pay, gy); 
-        // if(((-1000>gx)|(gx>1000))&((-1000>gz)|(gz>1000))){
-            Mouse.move(-gz/1000,gx/1000);
-            
-            //}
-            // these methods (and a few others) are also available
-            //accelgyro.getAcceleration(&ax, &ay, &az);
+            Mouse.move(-gz/1000,gx/1000); 
+            //cursor moves with resolution of -gz/1000 and gx/1000 on x-axis and y-axis respectively
             blinkState = !blinkState;
             digitalWrite(LED_PIN, blinkState);
             #if (DOUBLERESETDETECTOR_DEBUG)
             Serial.print(gz);Serial.print("\t");Serial.println(gy);
             #endif
-            // if (b1intruptAct==false){
-            // delay(70);
-            // b1intruptAct=true;Serial.print("wjdjlkjj\n");
-            // attachInterrupt(digitalPinToInterrupt(BUTTON1),B1_isr,CHANGE);      
-            // }
-            // if (b2intruptAct==false){
-            // delay(70);
-            // b2intruptAct=true;Serial.print("wjdjlkjj\n");
-            // attachInterrupt(digitalPinToInterrupt(BUTTON2),B2_isr,CHANGE);      
-            // }
-            // if (b3intruptAct==false){
-            // delay(70);
-            // b3intruptAct=true;Serial.print("wjdjlkjj\n");
-            // attachInterrupt(digitalPinToInterrupt(BUTTON3),B3_isr,CHANGE);      
-            // }
         }
         
     }
-    else 
+    else {
         delay (2000);
         #if (DOUBLERESETDETECTOR_DEBUG)
-            Serial.print("wjdj\n");
+            Serial.print("Host not found\n");
         #endif
+    }
     drd->loop();
 }
