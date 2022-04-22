@@ -108,7 +108,7 @@ void loop() {
     {
         accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);    //Reads all the 6-D motions of MPU6050.
         int down=(int)map(ay,-32768,32768,-2,2);               //Maps the ay value to the range -2 to 2.
-        if(down!=1)                                            //Checks whether the mouse is in rest state or not.
+        if(down!=-1)                                            //Checks whether the mouse is in rest state or not.
         {
             leftpresent = digitalRead(BUTTON1);         
             rightpresent = digitalRead(BUTTON2);
@@ -158,7 +158,7 @@ void loop() {
 
 
             
-            Mouse.move(-gz/1000,gx/1000);             //cursor moves with resolution of -gz/1000 and gx/1000 on x-axis and y-axis respectively
+            Mouse.move(-gz/1000,-gx/1000);             //cursor moves with resolution of -gz/1000 and gx/1000 on x-axis and y-axis respectively
             blinkState = !blinkState;                 // changes  blinksate
             digitalWrite(LED_PIN, blinkState);        // LED_PIN blinks LED based on blink state.
             #if (DOUBLERESETDETECTOR_DEBUG)
