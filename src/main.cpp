@@ -2,7 +2,7 @@
 #include "MPU6050.h"  //6-axis accelerometer or gyroscope library allows us to easily get the 6-D motion of the MPU6050.
 #include "Wire.h"     //Allows to communicate with I2C devices (consists of some advanced functions)
 #include <BleCombo.h> //Allows us to make the ESP32 act as bluetooth keyboard and mouse.
-#include "esp_sleep.h"   Allows to make ESP32 to hold values in pins when CPU is powered down.
+#include "esp_sleep.h" //  Allows to make ESP32 to hold values in pins when CPU is powered down.
 #define ESP_DRD_USE_LITTLEFS    true   // Activates LITTLEFS file system in library DOUBLERESETDETECTOR.h.
 #define ESP_DRD_USE_SPIFFS      false  //Deactivates SPIFFS file system in library DOUBLERESETDETECTOR.h.
 #define ESP_DRD_USE_EEPROM      false  //Deactivates SEP_DRD_USE_EEPROM in library DOUBLERESETDETECTOR.h.
@@ -45,6 +45,9 @@ bool leftpresent,rightpresent,middlepresent;        //variables whichstores the 
 void setup() {
     #if (DOUBLERESETDETECTOR_DEBUG)
         Serial.begin(38400);
+        // initialize serial communication
+        // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
+        // it's really up to you depending on your project)
     #endif
     drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);  //Assigns the converted DRD_TIMEOUT and DRD_ADDRESS to the drd object.
     pinMode(mpu1,OUTPUT);                                     // Assigns output to PIN 17.
@@ -65,13 +68,12 @@ void setup() {
     Keyboard.begin();
     Mouse.begin();                                            // Makes ESP32 visible as bluetooth Keyboard and Mouse to near by devices.
     #if (DOUBLERESETDETECTOR_DEBUG)
-        Serial.print("Charge level: "+BL.getBatteryChargeLevel());
+        Serial.print("Charge level: ");
+        Serial.println(BL.getBatteryChargeLevel());
     #endif
     Keyboard.setBatteryLevel(BL.getBatteryChargeLevel());
     //First converts the battery voltage level to percentage and then it is made to visible on screen as percentage
-    // initialize serial communication
-    // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
-    // it's really up to you depending on your project)
+    
     
     
     
@@ -158,7 +160,7 @@ void loop() {
 
 
             
-            Mouse.move(-gz/1000,-gx/1000);             //cursor moves with resolution of -gz/1000 and gx/1000 on x-axis and y-axis respectively
+            Mouse.move(-gz/800,-gx/800);             //cursor moves with resolution of -gz/1000 and -gx/1000 on x-axis and y-axis respectively
             blinkState = !blinkState;                 // changes  blinksate
             digitalWrite(LED_PIN, blinkState);        // LED_PIN blinks LED based on blink state.
             #if (DOUBLERESETDETECTOR_DEBUG)
