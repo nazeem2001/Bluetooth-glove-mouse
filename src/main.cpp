@@ -32,7 +32,9 @@ int16_t ax, ay, az;     //Creating variables of 16 bit int data type to read 3-D
 int16_t gx, gy, gz;     //Creating variables of 16 bit int data type to read 3-D gyroscope values.
 
 
-
+int32_t timeOut;
+bool downD=true,upD=false;
+int num=0;
 
 #define LED_PIN 22     // Replaces with 22 whereever LED_PIN is present
 #define mpu1 17        // Replaces with 17 whereever mpu1 is present
@@ -109,8 +111,8 @@ void loop() {
     if(Keyboard.isConnected())    //Checks the connectivity of Keyboard.
     {
         accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);    //Reads all the 6-D motions of MPU6050.
-        int down=(int)map(ay,-32768,32768,-2,2);               //Maps the ay value to the range -2 to 2.
-        if(down!=-1)                                            //Checks whether the mouse is in rest state or not.
+        int down=(int)map(ay,-32768,32768,-4,4);               //Maps the ay value to the range -2 to 2.
+        if(down>=-1)                                           //Checks whether the mouse is in rest state or not.
         {
             leftpresent = digitalRead(BUTTON1);         
             rightpresent = digitalRead(BUTTON2);
@@ -157,8 +159,21 @@ void loop() {
                     Mouse.release(MOUSE_MIDDLE);                             // Releases the button. 
                 }
             }
-
-
+            if (down>=1){
+                if (downD){
+                downD=false;
+                upD=true;
+                num++;
+                }
+            }
+            if(num>1){
+                if(timeOut<millis()){
+                    Keyboard.print(num);
+                    num=0;
+                    upD=false;
+                }
+            }
+   
             
             Mouse.move(-gz/800,-gx/800);             //cursor moves with resolution of -gz/1000 and -gx/1000 on x-axis and y-axis respectively
             blinkState = !blinkState;                 // changes  blinksate
@@ -166,6 +181,25 @@ void loop() {
             #if (DOUBLERESETDETECTOR_DEBUG)
             Serial.print(gz);Serial.print("\t");Serial.println(gy);
             #endif
+        }
+        else{
+          if (down<-1){
+            if (upD){
+              if(timeOut>millis()){
+                downD=true;
+              }
+              else{
+                timeOut=millis()+5000;
+                downD=true;
+                num=0;
+              }
+            }
+            else{
+              downD=true;
+              timeOut=millis()+5000;
+
+            }
+          }
         }
         
     }
