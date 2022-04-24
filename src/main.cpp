@@ -168,7 +168,40 @@ void loop() {
             }
             if(num>1){
                 if(timeOut<millis()){
-                    Keyboard.print(num);
+                    //Keyboard.print(num);
+                    if (num==2){
+                        Keyboard.press(KEY_LEFT_GUI);
+                        Keyboard.release(KEY_LEFT_GUI);
+                        delay(700);
+                        Keyboard.print("chrome");
+                        delay(700);
+                        Keyboard.write(KEY_RETURN);
+                        delay(2000);
+                        Keyboard.print("https://www.youtube.com/");
+                    }
+                    if (num==3){
+                        Keyboard.press(KEY_LEFT_GUI);
+                        Keyboard.release(KEY_LEFT_GUI);
+                        delay(700);
+                        Keyboard.print("chrome");
+                        delay(700);
+                        Keyboard.write(KEY_RETURN);
+                        delay(2000);
+                        Keyboard.print("https://www.google.co.in/");
+                    }
+                    if (num==4){
+                        Keyboard.press(KEY_LEFT_GUI);
+                        Keyboard.release(KEY_LEFT_GUI);
+                        delay(700);
+                        Keyboard.print("chrome");
+                        delay(700);
+                        Keyboard.write(KEY_RETURN);
+                        delay(2000);
+                        Keyboard.print("https://web.whatsapp.com/");
+                    }
+                    delay(1000);
+                    Keyboard.write(KEY_RETURN);
+                        
                     num=0;
                     upD=false;
                 }
