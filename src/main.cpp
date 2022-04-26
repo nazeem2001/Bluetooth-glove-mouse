@@ -7,7 +7,7 @@
 #define ESP_DRD_USE_SPIFFS      false  //Deactivates SPIFFS file system in library DOUBLERESETDETECTOR.h.
 #define ESP_DRD_USE_EEPROM      false  //Deactivates SEP_DRD_USE_EEPROM in library DOUBLERESETDETECTOR.h.
 
-#define DOUBLERESETDETECTOR_DEBUG      true  //Builds the code in DEBUG mode.
+#define DOUBLERESETDETECTOR_DEBUG      false  //Builds the code in DEBUG mode.
 
 #include <ESP_DoubleResetDetector.h>    // Library used to detect doublereset.
 
