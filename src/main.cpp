@@ -214,14 +214,14 @@ void loop() {
             #endif
         }
         else{
-        if (down<-1){
-            if(timeOut<millis()){
-                num=0;
+            if (down<-1){
+                if(timeOut<millis()){
+                    num=0;
+                }
+                timeOut=millis()+1000;
+                upD=false;
+                downD=true;
             }
-            timeOut=millis()+1000;
-            upD=false;
-            downD=true;
-        }
             
         }
     }
