@@ -97,6 +97,11 @@ void setup() {
     #if (DOUBLERESETDETECTOR_DEBUG)
         Serial.println("Testing device connections...");
         Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    
+    // use the code below to change accel/gyro offset values
+    
+        Serial.println("Updating internal sensor offsets...");
+   
         Serial.println("Starting work!");
     #endif
     // configure Arduino LED pin for output
@@ -200,9 +205,7 @@ void loop() {
                     num=0;
                     upD=false;
                 }
-            }
-   
-            
+            } 
             Mouse.move(-gz/800,-gx/800);             //cursor moves with resolution of -gz/1000 and -gx/1000 on x-axis and y-axis respectively
             blinkState = !blinkState;                 // changes  blinksate
             digitalWrite(LED_PIN, blinkState);        // LED_PIN blinks LED based on blink state.
@@ -211,27 +214,18 @@ void loop() {
             #endif
         }
         else{
-          if (down<-1){
-            if (upD){
-              if(timeOut>millis()){
-                downD=true;
-              }
-              else{
-                timeOut=millis()+5000;
-                downD=true;
+        if (down<-1){
+            if(timeOut<millis()){
                 num=0;
-              }
             }
-            else{
-              downD=true;
-              timeOut=millis()+5000;
-
-            }
-          }
+            timeOut=millis()+1000;
+            upD=false;
+            downD=true;
         }
-        
+            
+        }
     }
-    else {
+    else{
         delay (2000);
         #if (DOUBLERESETDETECTOR_DEBUG)
             Serial.print("Host not found\n");
